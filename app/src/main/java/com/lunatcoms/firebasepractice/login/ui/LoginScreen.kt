@@ -1,41 +1,47 @@
-package com.lunatcoms.firebasepractice.ui.login.ui
+package com.lunatcoms.firebasepractice.login.ui
 
 
-import android.content.Intent
-import com.lunatcoms.firebasepractice.R
-
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.lunatcoms.firebasepractice.ui.HomeActivity
+import com.lunatcoms.firebasepractice.R
 
-@Preview(showBackground = true)
 @Composable
-fun LoginScreen() {
+fun LoginScreen(navigateToHome: () -> Unit) {
 
     Box(
         Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        Login(Modifier.align(Alignment.Center))
+        Login(Modifier.align(Alignment.Center), navigateToHome)
     }
 
 }
-
 @Composable
-fun Login(modifier: Modifier) {
+fun Login(modifier: Modifier, navigateToHome: () -> Unit) {
     Column(modifier = modifier) {
         HeaderImage(Modifier.align(Alignment.CenterHorizontally))
         Spacer(modifier = Modifier.padding(16.dp))
@@ -45,7 +51,7 @@ fun Login(modifier: Modifier) {
         Spacer(modifier = Modifier.padding(8.dp))
         ForgotPassWord(Modifier.align(Alignment.End))
         Spacer(modifier = Modifier.padding(16.dp))
-        LoginButton()
+        LoginButton(navigateToHome)
         Spacer(modifier = Modifier.padding(12.dp))
         RegisterButton(Modifier.align(Alignment.CenterHorizontally))
 
@@ -56,13 +62,8 @@ fun Login(modifier: Modifier) {
 @Composable
 fun RegisterButton(modifier: Modifier) {
 
-    val context = LocalContext.current
-
     Text(
-        modifier = modifier.clickable {
-            val intent = Intent(context, HomeActivity::class.java)
-            context.startActivity(intent)
-        },
+        modifier = modifier.clickable {  },
         text = "Registrar",
         fontSize = 12.sp,
         fontWeight = FontWeight.Bold,
@@ -71,9 +72,9 @@ fun RegisterButton(modifier: Modifier) {
 }
 
 @Composable
-fun LoginButton() {
+fun LoginButton(navigateToHome: () -> Unit) {
     Button(
-        onClick = { },
+        onClick = { navigateToHome() },
         modifier = Modifier
             .fillMaxWidth()
             .height(48.dp),

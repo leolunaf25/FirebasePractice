@@ -1,4 +1,4 @@
-package com.lunatcoms.firebasepractice.ui.user.ui
+package com.lunatcoms.firebasepractice.user.ui
 
 import com.lunatcoms.firebasepractice.R
 
@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.sp
 @Preview(showBackground = true)
 
 @Composable
-fun UserScreen() {
+fun HomeScreen() {
 
     Box(
         Modifier
