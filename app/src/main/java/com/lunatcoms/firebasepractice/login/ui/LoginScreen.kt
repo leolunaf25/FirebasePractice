@@ -18,6 +18,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,32 +28,53 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import com.lunatcoms.firebasepractice.R
+import com.lunatcoms.firebasepractice.core.Home
+import com.lunatcoms.firebasepractice.core.Login
 
 @Composable
-fun LoginScreen(navigateToHome: () -> Unit) {
+fun LoginScreen(viewModel: LoginViewModel, navController: NavHostController) {
 
     Box(
         Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        Login(Modifier.align(Alignment.Center), navigateToHome)
+        Login(Modifier.align(Alignment.Center), viewModel, navController)
     }
 
 }
+
 @Composable
-fun Login(modifier: Modifier, navigateToHome: () -> Unit) {
+fun Login(modifier: Modifier, viewModel: LoginViewModel, navController: NavHostController) {
+
+    val email: String by viewModel.email.observeAsState(initial = "")
+    val password: String by viewModel.password.observeAsState(initial = "")
+    val loginEnable: Boolean by viewModel.loginEnable.observeAsState(initial = false)
+
+    val navigateToHome: Boolean by viewModel.navigateToHome.observeAsState(initial = false)
+
+    if (navigateToHome) {
+        LaunchedEffect(Unit) {
+            navController.navigate(Home) {
+                popUpTo(Login) { inclusive = true }
+            }
+            viewModel.resetNavigation()
+        }
+    }
+
+
     Column(modifier = modifier) {
         HeaderImage(Modifier.align(Alignment.CenterHorizontally))
         Spacer(modifier = Modifier.padding(16.dp))
-        EmailField()
+        EmailField(email) { viewModel.onLoginChanged(it, password) }
         Spacer(modifier = Modifier.padding(4.dp))
-        PasswordField()
+        PasswordField(password) { viewModel.onLoginChanged(email, it) }
         Spacer(modifier = Modifier.padding(8.dp))
         ForgotPassWord(Modifier.align(Alignment.End))
         Spacer(modifier = Modifier.padding(16.dp))
-        LoginButton(navigateToHome)
+        LoginButton(loginEnable) { viewModel.onLoginSelected() }
         Spacer(modifier = Modifier.padding(12.dp))
         RegisterButton(Modifier.align(Alignment.CenterHorizontally))
 
@@ -63,7 +86,7 @@ fun Login(modifier: Modifier, navigateToHome: () -> Unit) {
 fun RegisterButton(modifier: Modifier) {
 
     Text(
-        modifier = modifier.clickable {  },
+        modifier = modifier.clickable { },
         text = "Registrar",
         fontSize = 12.sp,
         fontWeight = FontWeight.Bold,
@@ -72,9 +95,9 @@ fun RegisterButton(modifier: Modifier) {
 }
 
 @Composable
-fun LoginButton(navigateToHome: () -> Unit) {
+fun LoginButton(loginEnable: Boolean, onLoginSelected: () -> Unit) {
     Button(
-        onClick = { navigateToHome() },
+        onClick = { onLoginSelected() },
         modifier = Modifier
             .fillMaxWidth()
             .height(48.dp),
@@ -83,7 +106,7 @@ fun LoginButton(navigateToHome: () -> Unit) {
             disabledContainerColor = Color(0xFFF78058),
             contentColor = Color.White,
             disabledContentColor = Color.White
-        )
+        ), enabled = loginEnable
     ) {
         Text(text = "Iniciar sesión")
     }
@@ -101,10 +124,10 @@ fun ForgotPassWord(modifier: Modifier) {
 }
 
 @Composable
-fun PasswordField() {
+fun PasswordField(password: String, onTextFieldChanged: (String) -> Unit) {
     TextField(
-        value = "",
-        onValueChange = {},
+        value = password,
+        onValueChange = { onTextFieldChanged(it) },
         modifier = Modifier.fillMaxWidth(),
         placeholder = { Text(text = "Contraseña") },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -122,10 +145,13 @@ fun PasswordField() {
 }
 
 @Composable
-fun EmailField() {
+
+
+fun EmailField(email: String, onTextFieldChanged: (String) -> Unit) {
+
     TextField(
-        value = "",
-        onValueChange = {},
+        value = email,
+        onValueChange = { onTextFieldChanged(it) },
         modifier = Modifier.fillMaxWidth(),
         placeholder = { Text(text = "Email") },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
@@ -142,13 +168,11 @@ fun EmailField() {
     )
 }
 
-
 @Composable
 fun HeaderImage(modifier: Modifier) {
     Image(
         painter = painterResource(id = R.drawable.ic_user),
         contentDescription = "Header",
         modifier = modifier.size(220.dp)
-
     )
 }
