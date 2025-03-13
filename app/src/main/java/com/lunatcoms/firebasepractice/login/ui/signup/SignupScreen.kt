@@ -33,41 +33,28 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
 import com.lunatcoms.firebasepractice.R
-import com.lunatcoms.firebasepractice.core.Home
 import com.lunatcoms.firebasepractice.login.ui.LoginViewModel
 
 @Composable
-fun SignupScreen(viewModel: LoginViewModel, navController: NavHostController) {
+fun SignupScreen(viewModel: LoginViewModel, navigateBack: () -> Unit) {
 
     Box(
         Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        Signup(Modifier.align(Alignment.Center), viewModel, navController)
+        Signup(Modifier.align(Alignment.Center), viewModel, navigateBack)
     }
 
 }
 
 @Composable
-fun Signup(modifier: Modifier, viewModel: LoginViewModel, navController: NavHostController) {
+fun Signup(modifier: Modifier, viewModel: LoginViewModel, navigateBack: () -> Unit) {
 
     val email: String by viewModel.email.observeAsState(initial = "")
     val password: String by viewModel.password.observeAsState(initial = "")
     val loginEnable: Boolean by viewModel.loginEnable.observeAsState(initial = false)
-
-    val navigateToHome: Boolean by viewModel.navigateToHome.observeAsState(initial = false)
-
-    if (navigateToHome) {
-        LaunchedEffect(Unit) {
-            navController.navigate(Home) {
-                popUpTo(com.lunatcoms.firebasepractice.core.Login) { inclusive = true }
-            }
-            viewModel.resetNavigation()
-        }
-    }
 
     Column(modifier = modifier) {
         HeaderImage(Modifier.align(Alignment.CenterHorizontally))
@@ -77,19 +64,19 @@ fun Signup(modifier: Modifier, viewModel: LoginViewModel, navController: NavHost
         PasswordField(password) { viewModel.onLoginChanged(email, it) }
         Spacer(modifier = Modifier.padding(8.dp))
         Spacer(modifier = Modifier.padding(16.dp))
-        LoginButton(loginEnable) { viewModel.onLoginSelected() }
+        AcceptButton(loginEnable) { viewModel.onAcceptSelected() }
         Spacer(modifier = Modifier.padding(12.dp))
-        RegisterButton(Modifier.align(Alignment.CenterHorizontally))
+        BackButton(Modifier.align(Alignment.CenterHorizontally), navigateBack)
 
     }
 
 }
 
 @Composable
-fun RegisterButton(modifier: Modifier) {
+fun BackButton(modifier: Modifier, navigateBack: () -> Unit) {
 
     Text(
-        modifier = modifier.clickable { },
+        modifier = modifier.clickable { navigateBack() },
         text = buildAnnotatedString {
             append("¿Ya te registraste? ")
             withStyle(style = SpanStyle(textDecoration = TextDecoration.Underline)) {
@@ -102,15 +89,15 @@ fun RegisterButton(modifier: Modifier) {
 }
 
 @Composable
-fun LoginButton(loginEnable: Boolean, onLoginSelected: () -> Unit) {
+fun AcceptButton(loginEnable: Boolean, onAcceptSelected: () -> Unit) {
     Button(
-        onClick = { onLoginSelected() },
+        onClick = { onAcceptSelected() },
         modifier = Modifier
             .fillMaxWidth()
             .height(48.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFFFF4303),
-            disabledContainerColor = Color(0xFFF78058),
+            containerColor = Color(0xFF3F51B5),
+            disabledContainerColor = Color(0xFF9FA8DA),
             contentColor = Color.White,
             disabledContentColor = Color.White
         ), enabled = loginEnable

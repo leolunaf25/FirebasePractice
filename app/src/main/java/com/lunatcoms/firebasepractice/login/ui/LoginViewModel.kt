@@ -1,6 +1,8 @@
 package com.lunatcoms.firebasepractice.login.ui
 
+import android.util.Log
 import android.util.Patterns
+import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -46,5 +48,10 @@ class LoginViewModel : ViewModel() {
 
     fun resetNavigation(){
         _navigateToHome.value = false
+        _navigateToSignup.value = false
+    }
+
+    fun onAcceptSelected() {
+        
     }
 }

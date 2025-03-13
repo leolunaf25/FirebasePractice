@@ -17,7 +17,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.*
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,51 +32,45 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
 import com.lunatcoms.firebasepractice.R
-import com.lunatcoms.firebasepractice.core.Home
-import com.lunatcoms.firebasepractice.core.Login
-import com.lunatcoms.firebasepractice.core.Signup
 
 @Composable
-fun LoginScreen(viewModel: LoginViewModel, navController: NavHostController) {
+fun LoginScreen(viewModel: LoginViewModel, navigateToHome:()->Unit,navigateToSignup: () -> Unit) {
 
     Box(
         Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        Login(Modifier.align(Alignment.Center), viewModel, navController)
+        Login(Modifier.align(Alignment.Center), viewModel, navigateToHome, navigateToSignup)
     }
 
 }
 
 @Composable
-fun Login(modifier: Modifier, viewModel: LoginViewModel, navController: NavHostController) {
+fun Login(modifier: Modifier, viewModel: LoginViewModel, navigateToHome:()->Unit,navigateToSignup: () -> Unit) {
 
     val email: String by viewModel.email.observeAsState(initial = "")
     val password: String by viewModel.password.observeAsState(initial = "")
     val loginEnable: Boolean by viewModel.loginEnable.observeAsState(initial = false)
 
-    val navigateToSignup: Boolean by viewModel.navigateToSignup.observeAsState(initial = false)
+    val navigateToSignupValue: Boolean by viewModel.navigateToSignup.observeAsState(initial = false)
 
-    if (navigateToSignup){
+    if (navigateToSignupValue){
         LaunchedEffect(Unit) {
-            navController.navigate(Signup)
-        }
-    }
-
-    val navigateToHome: Boolean by viewModel.navigateToHome.observeAsState(initial = false)
-
-    if (navigateToHome) {
-        LaunchedEffect(Unit) {
-            navController.navigate(Home) {
-                popUpTo(Login) { inclusive = true }
-            }
+            navigateToSignup()
             viewModel.resetNavigation()
         }
     }
 
+    val navigateToHomeValue: Boolean by viewModel.navigateToHome.observeAsState(initial = false)
+
+    if (navigateToHomeValue) {
+        LaunchedEffect(Unit) {
+            navigateToHome()
+            viewModel.resetNavigation()
+        }
+    }
 
     Column(modifier = modifier) {
         HeaderImage(Modifier.align(Alignment.CenterHorizontally))
@@ -184,7 +179,6 @@ fun EmailField(email: String, onTextFieldChanged: (String) -> Unit) {
         )
     )
 }
-
 @Composable
 fun HeaderImage(modifier: Modifier) {
     Image(
