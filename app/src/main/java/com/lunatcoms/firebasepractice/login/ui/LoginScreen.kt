@@ -1,5 +1,6 @@
 package com.lunatcoms.firebasepractice.login.ui
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -18,11 +19,13 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -35,7 +38,11 @@ import androidx.compose.ui.unit.sp
 import com.lunatcoms.firebasepractice.R
 
 @Composable
-fun LoginScreen(viewModel: LoginViewModel, navigateToHome:()->Unit,navigateToSignup: () -> Unit) {
+fun LoginScreen(
+    viewModel: AuthViewModel,
+    navigateToHome: () -> Unit,
+    navigateToSignup: () -> Unit
+) {
 
     Box(
         Modifier
@@ -48,7 +55,12 @@ fun LoginScreen(viewModel: LoginViewModel, navigateToHome:()->Unit,navigateToSig
 }
 
 @Composable
-fun Login(modifier: Modifier, viewModel: LoginViewModel, navigateToHome:()->Unit,navigateToSignup: () -> Unit) {
+fun Login(
+    modifier: Modifier,
+    viewModel: AuthViewModel,
+    navigateToHome: () -> Unit,
+    navigateToSignup: () -> Unit
+) {
 
     val email: String by viewModel.email.observeAsState(initial = "")
     val password: String by viewModel.password.observeAsState(initial = "")
@@ -56,21 +68,30 @@ fun Login(modifier: Modifier, viewModel: LoginViewModel, navigateToHome:()->Unit
 
     val navigateToSignupValue: Boolean by viewModel.navigateToSignup.observeAsState(initial = false)
 
-    if (navigateToSignupValue){
+    if (navigateToSignupValue) {
         LaunchedEffect(Unit) {
             navigateToSignup()
             viewModel.resetNavigation()
         }
     }
 
-    val navigateToHomeValue: Boolean by viewModel.navigateToHome.observeAsState(initial = false)
+    val authState = viewModel.authState.observeAsState()
+    val context = LocalContext.current
 
-    if (navigateToHomeValue) {
-        LaunchedEffect(Unit) {
-            navigateToHome()
-            viewModel.resetNavigation()
+    LaunchedEffect(authState.value) {
+        when (authState.value) {
+            is AuthState.Authenticated -> navigateToHome()
+            is AuthState.Error -> Toast.makeText(
+                context,
+                (authState.value as AuthState.Error).message, Toast.LENGTH_LONG
+            ).show()
+
+            else -> Unit
         }
     }
+
+
+
 
     Column(modifier = modifier) {
         HeaderImage(Modifier.align(Alignment.CenterHorizontally))
@@ -81,7 +102,7 @@ fun Login(modifier: Modifier, viewModel: LoginViewModel, navigateToHome:()->Unit
         Spacer(modifier = Modifier.padding(8.dp))
         ForgotPassWord(Modifier.align(Alignment.End))
         Spacer(modifier = Modifier.padding(16.dp))
-        LoginButton(loginEnable) { viewModel.onLoginSelected() }
+        LoginButton(authState) { viewModel.login(email, password) }
         Spacer(modifier = Modifier.padding(12.dp))
         SignupButton(Modifier.align(Alignment.CenterHorizontally)) { viewModel.onSignupSelected() }
 
@@ -107,7 +128,7 @@ fun SignupButton(modifier: Modifier, onSignupSelected: () -> Unit) {
 }
 
 @Composable
-fun LoginButton(loginEnable: Boolean, onLoginSelected: () -> Unit) {
+fun LoginButton(authState: State<AuthState?>, onLoginSelected: () -> Unit) {
     Button(
         onClick = { onLoginSelected() },
         modifier = Modifier
@@ -118,7 +139,7 @@ fun LoginButton(loginEnable: Boolean, onLoginSelected: () -> Unit) {
             disabledContainerColor = Color(0xFF9FA8DA),
             contentColor = Color.White,
             disabledContentColor = Color.White
-        ), enabled = loginEnable
+        ), enabled = authState.value != AuthState.Loading ///REVISAR VALIDACIONES
     ) {
         Text(text = "Iniciar sesión")
     }
@@ -179,6 +200,7 @@ fun EmailField(email: String, onTextFieldChanged: (String) -> Unit) {
         )
     )
 }
+
 @Composable
 fun HeaderImage(modifier: Modifier) {
     Image(

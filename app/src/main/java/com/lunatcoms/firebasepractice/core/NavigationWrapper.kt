@@ -5,29 +5,30 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.lunatcoms.firebasepractice.login.ui.LoginScreen
-import com.lunatcoms.firebasepractice.login.ui.LoginViewModel
+import com.lunatcoms.firebasepractice.login.ui.AuthViewModel
 import com.lunatcoms.firebasepractice.login.ui.signup.SignupScreen
 import com.lunatcoms.firebasepractice.user.ui.HomeScreen
 
 @Composable
-fun NavigationWrapper(){
+fun NavigationWrapper() {
 
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = Login){
-       composable<Login> {
-           LoginScreen(LoginViewModel(), {
-               navController.navigate(Home){
-               popUpTo(Login) { inclusive = true }
-           } },
-               { navController.navigate(Signup) })
-       }
+    NavHost(navController = navController, startDestination = Login) {
+        composable<Login> {
+            LoginScreen(AuthViewModel(),
+                { navController.navigate(Home) { popUpTo(Login) { inclusive = true } } },
+                { navController.navigate(Signup) })
+        }
 
         composable<Signup> {
-            SignupScreen(LoginViewModel()) {navController.navigateUp()}
+            SignupScreen(
+                AuthViewModel(),
+                { navController.navigateUp() },
+                { navController.navigate(Home) })
         }
 
         composable<Home> {
-            HomeScreen()
+            HomeScreen(AuthViewModel()) {navController.navigate(Login)}
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.lunatcoms.firebasepractice.login.ui.signup
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -24,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -34,27 +36,48 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lunatcoms.firebasepractice.R
-import com.lunatcoms.firebasepractice.login.ui.LoginViewModel
+import com.lunatcoms.firebasepractice.login.ui.AuthState
+import com.lunatcoms.firebasepractice.login.ui.AuthViewModel
 
 @Composable
-fun SignupScreen(viewModel: LoginViewModel, navigateBack: () -> Unit) {
+fun SignupScreen(viewModel: AuthViewModel, navigateBack: () -> Unit, navigateToHome: () -> Unit) {
 
     Box(
         Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        Signup(Modifier.align(Alignment.Center), viewModel, navigateBack)
+        Signup(Modifier.align(Alignment.Center), viewModel, navigateBack, navigateToHome)
     }
 
 }
 
 @Composable
-fun Signup(modifier: Modifier, viewModel: LoginViewModel, navigateBack: () -> Unit) {
+fun Signup(
+    modifier: Modifier,
+    viewModel: AuthViewModel,
+    navigateBack: () -> Unit,
+    navigateToHome: () -> Unit
+) {
 
     val email: String by viewModel.email.observeAsState(initial = "")
     val password: String by viewModel.password.observeAsState(initial = "")
     val loginEnable: Boolean by viewModel.loginEnable.observeAsState(initial = false)
+
+    val authState = viewModel.authState.observeAsState()
+    val context = LocalContext.current
+
+    LaunchedEffect(authState.value) {
+        when (authState.value) {
+            is AuthState.Authenticated -> navigateToHome()
+            is AuthState.Error -> Toast.makeText(
+                context,
+                (authState.value as AuthState.Error).message, Toast.LENGTH_LONG
+            ).show()
+
+            else -> Unit
+        }
+    }
 
     Column(modifier = modifier) {
         HeaderImage(Modifier.align(Alignment.CenterHorizontally))
@@ -64,7 +87,7 @@ fun Signup(modifier: Modifier, viewModel: LoginViewModel, navigateBack: () -> Un
         PasswordField(password) { viewModel.onLoginChanged(email, it) }
         Spacer(modifier = Modifier.padding(8.dp))
         Spacer(modifier = Modifier.padding(16.dp))
-        AcceptButton(loginEnable) { viewModel.onAcceptSelected() }
+        CreatedButton(loginEnable) { viewModel.signup(email, password) }
         Spacer(modifier = Modifier.padding(12.dp))
         BackButton(Modifier.align(Alignment.CenterHorizontally), navigateBack)
 
@@ -82,16 +105,16 @@ fun BackButton(modifier: Modifier, navigateBack: () -> Unit) {
             withStyle(style = SpanStyle(textDecoration = TextDecoration.Underline)) {
                 append("Inicia sesión")
             }
-        },        fontSize = 12.sp,
+        }, fontSize = 12.sp,
         fontWeight = FontWeight.Bold,
         color = Color.Black
     )
 }
 
 @Composable
-fun AcceptButton(loginEnable: Boolean, onAcceptSelected: () -> Unit) {
+fun CreatedButton(loginEnable: Boolean, onSignupSelected: () -> Unit) {
     Button(
-        onClick = { onAcceptSelected() },
+        onClick = { onSignupSelected() },
         modifier = Modifier
             .fillMaxWidth()
             .height(48.dp),
@@ -102,7 +125,7 @@ fun AcceptButton(loginEnable: Boolean, onAcceptSelected: () -> Unit) {
             disabledContentColor = Color.White
         ), enabled = loginEnable
     ) {
-        Text(text = "Aceptar")
+        Text(text = "Crear cuenta")
     }
 }
 
