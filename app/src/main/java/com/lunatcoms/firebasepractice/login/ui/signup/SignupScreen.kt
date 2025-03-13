@@ -1,4 +1,4 @@
-package com.lunatcoms.firebasepractice.login.ui
+package com.lunatcoms.firebasepractice.login.ui.signup
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -17,11 +17,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.*
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -34,48 +36,38 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.lunatcoms.firebasepractice.R
 import com.lunatcoms.firebasepractice.core.Home
-import com.lunatcoms.firebasepractice.core.Login
-import com.lunatcoms.firebasepractice.core.Signup
+import com.lunatcoms.firebasepractice.login.ui.LoginViewModel
 
 @Composable
-fun LoginScreen(viewModel: LoginViewModel, navController: NavHostController) {
+fun SignupScreen(viewModel: LoginViewModel, navController: NavHostController) {
 
     Box(
         Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        Login(Modifier.align(Alignment.Center), viewModel, navController)
+        Signup(Modifier.align(Alignment.Center), viewModel, navController)
     }
 
 }
 
 @Composable
-fun Login(modifier: Modifier, viewModel: LoginViewModel, navController: NavHostController) {
+fun Signup(modifier: Modifier, viewModel: LoginViewModel, navController: NavHostController) {
 
     val email: String by viewModel.email.observeAsState(initial = "")
     val password: String by viewModel.password.observeAsState(initial = "")
     val loginEnable: Boolean by viewModel.loginEnable.observeAsState(initial = false)
-
-    val navigateToSignup: Boolean by viewModel.navigateToSignup.observeAsState(initial = false)
-
-    if (navigateToSignup){
-        LaunchedEffect(Unit) {
-            navController.navigate(Signup)
-        }
-    }
 
     val navigateToHome: Boolean by viewModel.navigateToHome.observeAsState(initial = false)
 
     if (navigateToHome) {
         LaunchedEffect(Unit) {
             navController.navigate(Home) {
-                popUpTo(Login) { inclusive = true }
+                popUpTo(com.lunatcoms.firebasepractice.core.Login) { inclusive = true }
             }
             viewModel.resetNavigation()
         }
     }
-
 
     Column(modifier = modifier) {
         HeaderImage(Modifier.align(Alignment.CenterHorizontally))
@@ -84,28 +76,26 @@ fun Login(modifier: Modifier, viewModel: LoginViewModel, navController: NavHostC
         Spacer(modifier = Modifier.padding(4.dp))
         PasswordField(password) { viewModel.onLoginChanged(email, it) }
         Spacer(modifier = Modifier.padding(8.dp))
-        ForgotPassWord(Modifier.align(Alignment.End))
         Spacer(modifier = Modifier.padding(16.dp))
         LoginButton(loginEnable) { viewModel.onLoginSelected() }
         Spacer(modifier = Modifier.padding(12.dp))
-        SignupButton(Modifier.align(Alignment.CenterHorizontally)) { viewModel.onSignupSelected() }
+        RegisterButton(Modifier.align(Alignment.CenterHorizontally))
 
     }
 
 }
 
 @Composable
-fun SignupButton(modifier: Modifier, onSignupSelected: () -> Unit) {
+fun RegisterButton(modifier: Modifier) {
 
     Text(
-        modifier = modifier.clickable { onSignupSelected() },
+        modifier = modifier.clickable { },
         text = buildAnnotatedString {
-            append("¿No tienes cuenta? ")
+            append("¿Ya te registraste? ")
             withStyle(style = SpanStyle(textDecoration = TextDecoration.Underline)) {
-                append("Regístrate")
+                append("Inicia sesión")
             }
-        },
-        fontSize = 12.sp,
+        },        fontSize = 12.sp,
         fontWeight = FontWeight.Bold,
         color = Color.Black
     )
@@ -119,25 +109,14 @@ fun LoginButton(loginEnable: Boolean, onLoginSelected: () -> Unit) {
             .fillMaxWidth()
             .height(48.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFF3F51B5),
-            disabledContainerColor = Color(0xFF9FA8DA),
+            containerColor = Color(0xFFFF4303),
+            disabledContainerColor = Color(0xFFF78058),
             contentColor = Color.White,
             disabledContentColor = Color.White
         ), enabled = loginEnable
     ) {
-        Text(text = "Iniciar sesión")
+        Text(text = "Aceptar")
     }
-}
-
-@Composable
-fun ForgotPassWord(modifier: Modifier) {
-    Text(
-        modifier = modifier.clickable { },
-        text = "¿Olvidaste la contraseña?",
-        fontSize = 12.sp,
-        fontWeight = FontWeight.Bold,
-        color = Color.Black
-    )
 }
 
 @Composable
@@ -170,7 +149,7 @@ fun EmailField(email: String, onTextFieldChanged: (String) -> Unit) {
         value = email,
         onValueChange = { onTextFieldChanged(it) },
         modifier = Modifier.fillMaxWidth(),
-        placeholder = { Text(text = "Email") },
+        placeholder = { Text(text = "Correo electrónico") },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
         singleLine = true,
         maxLines = 1,
@@ -188,8 +167,10 @@ fun EmailField(email: String, onTextFieldChanged: (String) -> Unit) {
 @Composable
 fun HeaderImage(modifier: Modifier) {
     Image(
-        painter = painterResource(id = R.drawable.ic_user),
+        painter = painterResource(id = R.drawable.ic_signup),
         contentDescription = "Header",
-        modifier = modifier.size(220.dp)
+        modifier = modifier.size(220.dp),
+        colorFilter = ColorFilter.tint(Color(0xFF3F51B5))
+
     )
 }

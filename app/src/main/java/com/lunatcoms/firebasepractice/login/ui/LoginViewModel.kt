@@ -5,7 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
-class LoginViewModel() : ViewModel() {
+class LoginViewModel : ViewModel() {
 
     private val _email = MutableLiveData<String>()
     val email: LiveData<String> = _email
@@ -16,8 +16,15 @@ class LoginViewModel() : ViewModel() {
     private val _loginEnable = MutableLiveData<Boolean>()
     val loginEnable: LiveData<Boolean> = _loginEnable
 
+    private val _navigateToSignup = MutableLiveData<Boolean>()
+    val navigateToSignup: LiveData<Boolean> = _navigateToSignup
+
     private val _navigateToHome = MutableLiveData<Boolean>()
     val navigateToHome: LiveData<Boolean> = _navigateToHome
+
+    fun onSignupSelected(){
+        _navigateToSignup.value = true
+    }
 
     fun onLoginChanged(email: String, password: String) {
         _email.value = email

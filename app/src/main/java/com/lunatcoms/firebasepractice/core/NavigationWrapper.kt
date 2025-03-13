@@ -6,6 +6,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.lunatcoms.firebasepractice.login.ui.LoginScreen
 import com.lunatcoms.firebasepractice.login.ui.LoginViewModel
+import com.lunatcoms.firebasepractice.login.ui.signup.SignupScreen
 import com.lunatcoms.firebasepractice.user.ui.HomeScreen
 
 @Composable
@@ -16,6 +17,10 @@ fun NavigationWrapper(){
        composable<Login> {
            LoginScreen(LoginViewModel(), navController)
        }
+
+        composable<Signup> {
+            SignupScreen(LoginViewModel(), navController)
+        }
 
         composable<Home> {
             HomeScreen()
