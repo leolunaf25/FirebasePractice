@@ -16,19 +16,35 @@ fun NavigationWrapper() {
     NavHost(navController = navController, startDestination = Login) {
         composable<Login> {
             LoginScreen(AuthViewModel(),
-                { navController.navigate(Home) { popUpTo(Login) { inclusive = true } } },
-                { navController.navigate(Signup) })
+                {
+                    navController.navigate(Home) {
+                        popUpTo<Login> { inclusive = true }
+                        launchSingleTop = true
+                    }
+                },
+                { navController.navigate(Signup) {
+                    launchSingleTop = true
+                } })
         }
 
         composable<Signup> {
-            SignupScreen(
-                AuthViewModel(),
-                { navController.navigateUp() },
-                { navController.navigate(Home) })
+            SignupScreen(AuthViewModel(),
+                { navController.popBackStack() },
+                {
+                    navController.navigate(Home) {
+                        popUpTo<Login> { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
+            )
         }
-
         composable<Home> {
-            HomeScreen(AuthViewModel()) {navController.navigate(Login)}
+            HomeScreen(AuthViewModel()) {
+                navController.navigate(Login) {
+                    popUpTo<Home> { inclusive = true }
+                    launchSingleTop = true
+                }
+            }
         }
     }
 }
