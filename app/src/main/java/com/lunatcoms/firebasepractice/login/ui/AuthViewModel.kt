@@ -1,12 +1,73 @@
 package com.lunatcoms.firebasepractice.login.ui
 
+import android.content.Context
+import android.util.Log
 import android.util.Patterns
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
+import com.lunatcoms.firebasepractice.R
 
 class AuthViewModel : ViewModel() {
+
+    /*Autenticacion con Google*/
+
+    private val _googleSignInResult = MutableLiveData<Boolean>()
+    val googleSignInResult: LiveData<Boolean> = _googleSignInResult
+
+    private val authRepository: AuthRepository = AuthRepository(FirebaseAuth.getInstance())
+
+    fun signInWithGoogle(idToken: String) {
+        authRepository.signInWithGoogle(idToken) { success, error ->
+            if (success) {
+                _googleSignInResult.value = true
+                _navigateToHome.value = true // Navegación a Home
+            } else {
+                _googleSignInResult.value = false
+                Log.e("GoogleSignIn", "Error: $error")
+            }
+        }
+    }
+
+    fun signOutGoogle(context: Context, onComplete: () -> Unit) {
+        val googleSignInClient = GoogleSignIn.getClient(
+            context,
+            GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(context.getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build()
+        )
+
+        googleSignInClient.signOut().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                FirebaseAuth.getInstance().signOut()
+                onComplete()
+            } else {
+                Log.e("GoogleSignOut", "Error al cerrar sesión con Google: ${task.exception?.message}")
+            }
+        }
+    }
+
+
+    ///Get User Data
+    private val _userName = MutableLiveData<String?>()
+    val userName: LiveData<String?> = _userName
+
+    init {
+        _userName.value = FirebaseAuth.getInstance().currentUser?.displayName
+    }
+
+    fun getGoogleUserName(): String? {
+        return FirebaseAuth.getInstance().currentUser?.displayName
+    }
+
+
+    /**/
+
 
     private val _email = MutableLiveData<String>()
     val email: LiveData<String> = _email
@@ -46,6 +107,7 @@ class AuthViewModel : ViewModel() {
     }
 
     fun resetNavigation() {
+        _googleSignInResult.value = false
         _navigateToHome.value = false
         _navigateToSignup.value = false
     }
@@ -110,11 +172,12 @@ class AuthViewModel : ViewModel() {
             }
     }
 
-   fun signout(){
-       auth.signOut()
-       _authState.value = AuthState.Unauthenticated
-   }
-
+    fun signout(context: Context, onComplete: () -> Unit) {
+        signOutGoogle(context) {
+            _authState.value = AuthState.Unauthenticated
+            onComplete()
+        }
+    }
 }
 
 sealed class AuthState {
@@ -122,4 +185,19 @@ sealed class AuthState {
     object Unauthenticated : AuthState()
     object Loading : AuthState()
     data class Error(val message: String) : AuthState()
+}
+
+
+class AuthRepository(private val firebaseAuth: FirebaseAuth) {
+    fun signInWithGoogle(idToken: String, onResult: (Boolean, String?) -> Unit) {
+        val credential = GoogleAuthProvider.getCredential(idToken, null)
+        firebaseAuth.signInWithCredential(credential)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    onResult(true, null)
+                } else {
+                    onResult(false, task.exception?.message)
+                }
+            }
+    }
 }
